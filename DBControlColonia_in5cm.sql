@@ -14,52 +14,54 @@ primary key PK_id_casa(id_casa)
 
 create table Residente(
 id_residente int not null auto_increment,
-nombre_residente varchar(100),
-dpi_residente varchar(20),
-telefono_residente varchar(8),
+nombre_residente varchar(100) not null,
+dpi_residente varchar(20) not null,
+telefono_residente varchar(8) not null,
 posicion enum("activo", "inactivo") not null,
 id_casa int not null,
 primary key PK_id_residente(id_residente),
- constraint FK_residente_casa foreign key (id_casa)
+constraint FK_residente_casa foreign key (id_casa)
 references Casa(id_casa) on delete cascade
 );
 
 create table Visita(
 id_visita int not null auto_increment,
-nombre_visita varchar(100),
-documento varchar(20),
-placa varchar(8),
-motivo varchar(50),
+nombre_visita varchar(100) not null,
+documento varchar(20) not null,
+placa varchar(8) not null,
+motivo varchar(50) not null,
 id_casa int not null,
 primary key Pk_id_visita(id_visita),
-	constraint Fk_residente_casa foreign key (id_casa)
+constraint Fk_visita_casa foreign key (id_casa)
 references Casa(id_casa) on delete cascade
-);
-
-create table Accesos(
-id_acceso int auto_increment,
-tipo_persona enum("vista", "residente", "personal"),
-id_persona int auto_increment,
-hora_entrada date,
-hora_salida date,
-primary key Pk_id_visita(id_acceso)
 );
 
 create table Seguridad(
     id_seguridad int auto_increment not null,
     nombre varchar(100) not null,
     puesto varchar(50) not null,
-    jornada enum('día', 'noche') not null,
+    jornada enum('dia', 'noche') not null,
     salario decimal(10,2) not null,
     telefono varchar(8) not null,
     primary key PK_id_seguridad(id_seguridad)
+);
+
+create table Accesos(
+id_acceso int auto_increment not null,
+tipo_persona enum("visita", "residente", "personal") not null,
+id_seguridad int not null,
+hora_entrada datetime not null,
+hora_salida datetime not null,
+primary key Pk_id_acceso(id_acceso),
+constraint FK_id_seguridad foreign key (id_seguridad)
+references Seguridad(id_seguridad) on delete cascade
 );
 
 create table Limpieza(
     id_limpieza int auto_increment not null,
     nombre varchar(100) not null,
     puesto varchar(50) not null, -- (limpieza, jardinero, etc.)
-    jornada enum('mañana', 'tarde', 'mixta') not null,
+    jornada enum('manana', 'tarde', 'mixta') not null,
     salario decimal(10,2) not null,
     telefono varchar(8) not null,
     primary key PK_id_limpieza(id_limpieza)
@@ -67,15 +69,14 @@ create table Limpieza(
 
 create table Vehiculos(
     id_vehiculo int auto_increment not null,
-    placa varchar(10) not null,
+    placa varchar(8) not null unique,
     marca_modelo varchar(50) not null,
     color varchar(30) not null,
     propietario varchar(100) not null,
     id_casa int not null,
     primary key(id_vehiculo),
-
     constraint fk_vehiculo_casa foreign key(id_casa)
-        references casa(id_casa) on delete cascade
+	references Casa(id_casa) on delete cascade
 );
 
 create table Amenidades(
@@ -92,17 +93,20 @@ create table Multas (
 	id_multa int auto_increment not null,
     monto decimal(10,2) not null,
     descripcion varchar(100) not null,
-    fecha_emision date,
-    estado enum('pendiente', 'pagado', 'anulada'),
-    tipo_multa varchar(50)
+    fecha_emision date not null,
+    estado enum('pendiente', 'pagado', 'anulada') not null,
+    tipo_multa varchar(50) not null,
+    primary key (id_multa)
 );
 
 create table Pagos (
-	clasificacion_pago enum('multa', 'mantenimiento', 'amenidad'),
-    monto decimal(10,2),
-    fecha_pago date,
-    metodo enum('efectivo', 'transferencia', 'tarjeta'),
-    referencia varchar(50)
+	id_pago int auto_increment not null,
+	clasificacion_pago enum('multa', 'mantenimiento', 'amenidad')  not null,
+    monto decimal(10,2) not null,
+    fecha_pago date not null,
+    metodo enum('efectivo', 'transferencia', 'tarjeta') not null,
+    referencia varchar(50) not null,
+    primary key (id_pago)
 );
 
 
@@ -269,8 +273,8 @@ delimiter $$
 create procedure sp_accesos_create(
     in a_tipo_persona enum("vista", "residente", "personal"), 
     in a_id_persona int, 
-    in a_hora_entrada date, 
-    in a_hora_salida date
+    in a_hora_entrada datetime, 
+    in a_hora_salida datetime
 )
 begin 
     insert into accesos(tipo_persona, id_persona, hora_entrada, hora_salida)
@@ -310,8 +314,8 @@ create procedure sp_accesos_update(
     in a_id_acceso int, 
     in a_tipo_persona enum("vista", "residente", "personal"), 
     in a_id_persona int, 
-    in a_hora_entrada date, 
-    in a_hora_salida date
+    in a_hora_entrada datetime, 
+    in a_hora_salida datetime
 )
 begin 
     update accesos 
@@ -455,7 +459,7 @@ Delimiter ;
 -- Create --
 delimiter $$
 create procedure sp_vehiculos_create(
-    in v_placa varchar(10),
+    in v_placa varchar(8),
     in v_marca_modelo varchar(50),
     in v_color varchar(30),
     in v_propietario varchar(100),
@@ -489,7 +493,7 @@ delimiter ;
 delimiter $$
 create procedure sp_vehiculos_update(
     in v_id_vehiculo int,
-    in v_placa varchar(10),
+    in v_placa varchar(8),
     in v_marca_modelo varchar(50),
     in v_color varchar(30),
     in v_propietario varchar(100),
