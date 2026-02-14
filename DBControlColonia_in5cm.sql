@@ -65,7 +65,7 @@ create table Limpieza(
     primary key PK_id_limpieza(id_limpieza)
 );
 
-create table vehiculos(
+create table Vehiculos(
     id_vehiculo int auto_increment not null,
     placa varchar(10) not null,
     marca_modelo varchar(50) not null,
@@ -78,7 +78,7 @@ create table vehiculos(
         references casa(id_casa) on delete cascade
 );
 
-create table amenidades(
+create table Amenidades(
     id_amenidad int auto_increment not null,
     nombre_amenidad varchar(100) not null,
     horario_uso varchar(50) not null,
@@ -86,6 +86,23 @@ create table amenidades(
     estado enum('disponible','ocupado','mantenimiento') not null,
     capacidad int not null,
     primary key(id_amenidad)
+);
+
+create table Multas (
+	id_multa int auto_increment not null,
+    monto decimal(10,2) not null,
+    descripcion varchar(100) not null,
+    fecha_emision date,
+    estado enum('pendiente', 'pagado', 'anulada'),
+    tipo_multa varchar(50)
+);
+
+create table Pagos (
+	clasificacion_pago enum('multa', 'mantenimiento', 'amenidad'),
+    monto decimal(10,2),
+    fecha_pago date,
+    metodo enum('efectivo', 'transferencia', 'tarjeta'),
+    referencia varchar(50)
 );
 
 
@@ -563,6 +580,118 @@ delimiter $$
 create procedure sp_amenidades_delete(in a_id_amenidad int)
 begin
     delete from amenidades where id_amenidad = a_id_amenidad;
+    select row_count() as filas_afectadas;
+end $$
+delimiter ;
+
+	-- Multas --
+-- create --
+delimiter $$ 
+create procedure sp_Multas_create(
+    in m_monto decimal(10,2), 
+    in m_descripcion varchar(100), 
+    in m_fecha_emision date, 
+    in m_estado enum('pendiente', 'pagado', 'anulada'), 
+    in m_tipo_multa varchar(50)
+)
+begin 
+    insert into Multas(monto, descripcion, fecha_emision, estado, tipo_multa)
+    values (m_monto, m_descripcion, m_fecha_emision, m_estado, m_tipo_multa);
+    select last_insert_id() as id_multa;
+end $$
+delimiter ;
+
+-- Delete --
+delimiter $$
+create procedure sp_Multas_delete(in m_id_multa int)
+begin
+    delete from Multas where id_multa = m_id_multa;
+    select row_count() as filas_afectadas;
+end $$
+delimiter ;
+
+-- Read -- 
+delimiter $$
+create procedure sp_Multas_read_all()
+begin 
+    select * from Multas order by id_multa;
+end $$
+delimiter ;
+
+-- Update -- 
+delimiter $$
+create procedure sp_Multas_update(
+    in m_id_multa int,
+    in m_monto decimal(10,2), 
+    in m_descripcion varchar(100), 
+    in m_fecha_emision date, 
+    in m_estado enum('pendiente', 'pagado', 'anulada'), 
+    in m_tipo_multa varchar(50)
+)
+begin 
+    update Multas 
+    set monto = m_monto,
+        descripcion = m_descripcion,
+        fecha_emision = m_fecha_emision,
+        estado = m_estado,
+        tipo_multa = m_tipo_multa
+    where id_multa = m_id_multa;
+    select row_count() as filas_afectadas;
+end $$
+delimiter ;
+
+	-- Pagos --
+-- Create --
+delimiter $$ 
+create procedure sp_Pagos_create(
+    in p_clasificacion_pago enum('multa', 'mantenimiento', 'amenidad'), 
+    in p_monto decimal(10,2), 
+    in p_fecha_pago date, 
+    in p_metodo enum('efectivo', 'transferencia', 'tarjeta'), 
+    in p_referencia varchar(50)
+)
+begin 
+    insert into Pagos(clasificacion_pago, monto, fecha_pago, metodo, referencia)
+    values (p_clasificacion_pago, p_monto, p_fecha_pago, p_metodo, p_referencia);
+    select last_insert_id() as id_pago;
+end $$
+delimiter ;
+
+-- Delete --
+delimiter $$
+create procedure sp_Pagos_delete(in p_id_pago int)
+begin
+    delete from Pagos where id_pago = p_id_pago;
+    select row_count() as filas_afectadas;
+end $$
+delimiter ;
+
+-- Read -- 
+delimiter $$
+create procedure sp_Pagos_read_all()
+begin 
+    select * from Pagos;
+end $$
+delimiter ;
+
+-- Update -- 
+delimiter $$
+create procedure sp_Pagos_update(
+    in p_id_pago int,
+    in p_clasificacion_pago enum('multa', 'mantenimiento', 'amenidad'), 
+    in p_monto decimal(10,2), 
+    in p_fecha_pago date, 
+    in p_metodo enum('efectivo', 'transferencia', 'tarjeta'), 
+    in p_referencia varchar(50)
+)
+begin 
+    update Pagos 
+    set clasificacion_pago = p_clasificacion_pago,
+        monto = p_monto,
+        fecha_pago = p_fecha_pago,
+        metodo = p_metodo,
+        referencia = p_referencia
+    where id_pago = p_id_pago;
     select row_count() as filas_afectadas;
 end $$
 delimiter ;
