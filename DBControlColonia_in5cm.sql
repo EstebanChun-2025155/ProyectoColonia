@@ -65,6 +65,30 @@ create table Limpieza(
     primary key PK_id_limpieza(id_limpieza)
 );
 
+create table vehiculos(
+    id_vehiculo int auto_increment not null,
+    placa varchar(10) not null,
+    marca_modelo varchar(50) not null,
+    color varchar(30) not null,
+    propietario varchar(100) not null,
+    id_casa int not null,
+    primary key(id_vehiculo),
+
+    constraint fk_vehiculo_casa foreign key(id_casa)
+        references casa(id_casa) on delete cascade
+);
+
+create table amenidades(
+    id_amenidad int auto_increment not null,
+    nombre_amenidad varchar(100) not null,
+    horario_uso varchar(50) not null,
+    costo_uso decimal(10,2) not null,
+    estado enum('disponible','ocupado','mantenimiento') not null,
+    capacidad int not null,
+    primary key(id_amenidad)
+);
+
+
 -- PROCEDIMIENTO ALMACENADOS --
 
 	-- Casa --
@@ -408,3 +432,137 @@ Delimiter $$
         select row_count() as filas_afectadas;
     end $$
 Delimiter ;
+
+-- Vehiculos--
+
+-- Create --
+delimiter $$
+create procedure sp_vehiculos_create(
+    in v_placa varchar(10),
+    in v_marca_modelo varchar(50),
+    in v_color varchar(30),
+    in v_propietario varchar(100),
+    in v_id_casa int
+)
+begin
+    insert into vehiculos(placa, marca_modelo, color, propietario, id_casa)
+    values (v_placa, v_marca_modelo, v_color, v_propietario, v_id_casa);
+
+    select last_insert_id() as id_vehiculo;
+end $$
+delimiter ;
+
+-- read all --
+delimiter $$
+create procedure sp_vehiculos_read_all()
+begin
+    select * from vehiculos order by id_vehiculo;
+end $$
+delimiter ;
+
+-- read by id -- 
+delimiter $$
+create procedure sp_vehiculos_read_by_id(in v_id_vehiculo int)
+begin
+    select * from vehiculos where id_vehiculo = v_id_vehiculo;
+end $$
+delimiter ;
+
+-- update --
+delimiter $$
+create procedure sp_vehiculos_update(
+    in v_id_vehiculo int,
+    in v_placa varchar(10),
+    in v_marca_modelo varchar(50),
+    in v_color varchar(30),
+    in v_propietario varchar(100),
+    in v_id_casa int
+)
+begin
+    update vehiculos
+    set placa = v_placa,
+        marca_modelo = v_marca_modelo,
+        color = v_color,
+        propietario = v_propietario,
+        id_casa = v_id_casa
+    where id_vehiculo = v_id_vehiculo;
+
+    select row_count() as filas_afectadas;
+end $$
+delimiter ;
+
+-- delete -- 
+delimiter $$
+create procedure sp_vehiculos_delete(in v_id_vehiculo int)
+begin
+    delete from vehiculos where id_vehiculo = v_id_vehiculo;
+    select row_count() as filas_afectadas;
+end $$
+delimiter ;
+
+-- Amenidades --
+
+-- create --
+delimiter $$
+create procedure sp_amenidades_create(
+    in a_nombre_amenidad varchar(100),
+    in a_horario_uso varchar(50),
+    in a_costo_uso decimal(10,2),
+    in a_estado varchar(20),
+    in a_capacidad int
+)
+begin
+    insert into amenidades(nombre_amenidad, horario_uso, costo_uso, estado, capacidad)
+    values (a_nombre_amenidad, a_horario_uso, a_costo_uso, a_estado, a_capacidad);
+
+    select last_insert_id() as id_amenidad;
+end $$
+delimiter ;
+
+-- read all-- 
+delimiter $$
+create procedure sp_amenidades_read_all()
+begin
+    select * from amenidades order by id_amenidad;
+end $$
+delimiter ;
+
+-- read by id --
+delimiter $$
+create procedure sp_amenidades_read_by_id(in a_id_amenidad int)
+begin
+    select * from amenidades where id_amenidad = a_id_amenidad;
+end $$
+delimiter ;
+
+-- update --
+delimiter $$
+create procedure sp_amenidades_update(
+    in a_id_amenidad int,
+    in a_nombre_amenidad varchar(100),
+    in a_horario_uso varchar(50),
+    in a_costo_uso decimal(10,2),
+    in a_estado varchar(20),
+    in a_capacidad int
+)
+begin
+    update amenidades
+    set nombre_amenidad = a_nombre_amenidad,
+        horario_uso = a_horario_uso,
+        costo_uso = a_costo_uso,
+        estado = a_estado,
+        capacidad = a_capacidad
+    where id_amenidad = a_id_amenidad;
+
+    select row_count() as filas_afectadas;
+end $$
+delimiter ;
+
+-- delete --
+delimiter $$
+create procedure sp_amenidades_delete(in a_id_amenidad int)
+begin
+    delete from amenidades where id_amenidad = a_id_amenidad;
+    select row_count() as filas_afectadas;
+end $$
+delimiter ;
