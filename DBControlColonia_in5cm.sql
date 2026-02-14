@@ -45,6 +45,26 @@ hora_salida date,
 primary key Pk_id_visita(id_acceso)
 );
 
+create table Seguridad(
+    id_seguridad int auto_increment not null,
+    nombre varchar(100) not null,
+    puesto varchar(50) not null,
+    jornada enum('día', 'noche') not null,
+    salario decimal(10,2) not null,
+    telefono varchar(8) not null,
+    primary key PK_id_seguridad(id_seguridad)
+);
+
+create table Limpieza(
+    id_limpieza int auto_increment not null,
+    nombre varchar(100) not null,
+    puesto varchar(50) not null, -- (limpieza, jardinero, etc.)
+    jornada enum('mañana', 'tarde', 'mixta') not null,
+    salario decimal(10,2) not null,
+    telefono varchar(8) not null,
+    primary key PK_id_limpieza(id_limpieza)
+);
+
 -- PROCEDIMIENTO ALMACENADOS --
 
 	-- Casa --
@@ -262,3 +282,129 @@ begin
     select row_count() as filas_afectadas;
 end $$
 delimiter ;
+
+-- Create --
+Delimiter $$ 
+    create procedure sp_Seguridad_create(
+        in s_nombre varchar(100), 
+        in s_puesto varchar(50), 
+        in s_jornada enum('día', 'noche'), 
+        in s_salario decimal(10, 2), 
+        in s_telefono varchar(8)
+    )
+    begin 
+        insert into Seguridad(nombre, puesto, jornada, salario, telefono)
+        values (s_nombre, s_puesto, s_jornada, s_salario, s_telefono);
+        select last_insert_id() as id_seguridad;
+    end $$
+Delimiter ;
+
+-- delete --
+Delimiter $$
+    create procedure sp_Seguridad_delete(in s_id_seguridad int)
+    begin
+        delete from Seguridad where id_seguridad = s_id_seguridad;
+        select row_count() as filas_afectadas;
+    end $$
+Delimiter ;
+
+-- read all -- 
+Delimiter $$
+    create procedure sp_Seguridad_read_all()
+    begin 
+        select * from Seguridad order by id_seguridad;
+    end $$
+Delimiter ;
+
+-- read by id --
+Delimiter $$
+    create procedure sp_Seguridad_read_by_id(in s_id_seguridad int)
+    begin 
+        select * from Seguridad where id_seguridad = s_id_seguridad;
+    end $$
+Delimiter ;
+
+-- update -- 
+Delimiter $$
+    create procedure sp_Seguridad_update(
+        in s_id_seguridad int, 
+        in s_nombre varchar(100), 
+        in s_puesto varchar(50), 
+        in s_jornada enum('día', 'noche'), 
+        in s_salario decimal(10, 2), 
+        in s_telefono varchar(8)
+    )
+    begin 
+        update Seguridad 
+        set nombre = s_nombre,
+            puesto = s_puesto,
+            jornada = s_jornada,
+            salario = s_salario,
+            telefono = s_telefono
+        where id_seguridad = s_id_seguridad;
+        select row_count() as filas_afectadas;
+    end $$
+Delimiter ;
+
+-- create --
+Delimiter $$ 
+    create procedure sp_Limpieza_create(
+        in l_nombre varchar(100), 
+        in l_puesto varchar(50), 
+        in l_jornada enum('mañana', 'tarde', 'mixta'), 
+        in l_salario decimal(10, 2), 
+        in l_telefono varchar(8)
+    )
+    begin 
+        insert into Limpieza(nombre, puesto, jornada, salario, telefono)
+        values (l_nombre, l_puesto, l_jornada, l_salario, l_telefono);
+        select last_insert_id() as id_limpieza;
+    end $$
+Delimiter ;
+
+-- delete --
+Delimiter $$
+    create procedure sp_Limpieza_delete(in l_id_limpieza int)
+    begin
+        delete from Limpieza where id_limpieza = l_id_limpieza;
+        select row_count() as filas_afectadas;
+    end $$
+Delimiter ;
+
+-- read all -- 
+Delimiter $$
+    create procedure sp_Limpieza_read_all()
+    begin 
+        select * from Limpieza order by id_limpieza;
+    end $$
+Delimiter ;
+
+-- read by id --
+Delimiter $$
+    create procedure sp_Limpieza_read_by_id(in l_id_limpieza int)
+    begin 
+        select * from Limpieza where id_limpieza = l_id_limpieza;
+    end $$
+Delimiter ;
+
+-- update -- 
+Delimiter $$
+    create procedure sp_Limpieza_update(
+        in l_id_limpieza int, 
+        in l_nombre varchar(100), 
+        in l_puesto varchar(50), 
+        in l_jornada enum('mañana', 'tarde', 'mixta'), 
+        in l_salario decimal(10, 2), 
+        in l_telefono varchar(8)
+    )
+    begin 
+        update Limpieza 
+        set nombre = l_nombre,
+            puesto = l_puesto,
+            jornada = l_jornada,
+            salario = l_salario,
+            telefono = l_telefono
+        where id_limpieza = l_id_limpieza;
+        select row_count() as filas_afectadas;
+    end $$
+Delimiter ;
