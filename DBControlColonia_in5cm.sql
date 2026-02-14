@@ -24,6 +24,27 @@ primary key PK_id_residente(id_residente),
 references Casa(id_casa) on delete cascade
 );
 
+create table Visita(
+id_visita int not null auto_increment,
+nombre_visita varchar(100),
+documento varchar(20),
+placa varchar(8),
+motivo varchar(50),
+id_casa int not null,
+primary key Pk_id_visita(id_visita),
+	constraint Fk_residente_casa foreign key (id_casa)
+references Casa(id_casa) on delete cascade
+);
+
+create table Accesos(
+id_acceso int auto_increment,
+tipo_persona enum("vista", "residente", "personal"),
+id_persona int auto_increment,
+hora_entrada date,
+hora_salida date,
+primary key Pk_id_visita(id_acceso)
+);
+
 -- PROCEDIMIENTO ALMACENADOS --
 
 	-- Casa --
@@ -117,3 +138,127 @@ Delimiter $$
 		select row_count() as filas_afectadas;
     end $$
 Delimiter ;
+
+		-- Visita --
+-- create --
+delimiter $$
+create procedure sp_visita_create(
+    in v_nombre_visita varchar(100), 
+    in v_documento varchar(20), 
+    in v_placa varchar(8), 
+    in v_motivo varchar(50), 
+    in v_id_casa int
+)
+begin 
+    insert into visita(nombre_visita, documento, placa, motivo, id_casa)
+    values (v_nombre_visita, v_documento, v_placa, v_motivo, v_id_casa);
+    select last_insert_id() as id_visita;
+end $$
+delimiter ;
+
+-- delete --
+delimiter $$
+create procedure sp_visita_delete(in v_id_visita int)
+begin
+    delete from visita where id_visita = v_id_visita;
+    select row_count() as filas_afectadas;
+end $$
+delimiter ;
+
+-- read all --
+delimiter $$
+create procedure sp_visita_read_all()
+begin 
+    select * from visita order by id_visita;
+end $$
+delimiter ;
+
+-- read by id --
+delimiter $$
+create procedure sp_visita_read_by_id(in v_id_visita int)
+begin 
+    select * from visita where id_visita = v_id_visita;
+end $$
+delimiter ;
+
+-- update --
+delimiter $$
+create procedure sp_visita_update(
+    in v_id_visita int, 
+    in v_nombre_visita varchar(100), 
+    in v_documento varchar(20), 
+    in v_placa varchar(8), 
+    in v_motivo varchar(50), 
+    in v_id_casa int
+)
+begin 
+    update visita 
+    set nombre_visita = v_nombre_visita,
+        documento = v_documento,
+        placa = v_placa,
+        motivo = v_motivo,
+        id_casa = v_id_casa
+    where id_visita = v_id_visita;
+    select row_count() as filas_afectadas;
+end $$
+delimiter ;
+		-- Acceso --
+-- create --
+delimiter $$
+create procedure sp_accesos_create(
+    in a_tipo_persona enum("vista", "residente", "personal"), 
+    in a_id_persona int, 
+    in a_hora_entrada date, 
+    in a_hora_salida date
+)
+begin 
+    insert into accesos(tipo_persona, id_persona, hora_entrada, hora_salida)
+    values (a_tipo_persona, a_id_persona, a_hora_entrada, a_hora_salida);
+    select last_insert_id() as id_acceso;
+end $$
+delimiter ;
+
+-- delete --
+delimiter $$
+create procedure sp_accesos_delete(in a_id_acceso int)
+begin
+    delete from accesos where id_acceso = a_id_acceso;
+    select row_count() as filas_afectadas;
+end $$
+delimiter ;
+
+-- read all --
+delimiter $$
+create procedure sp_accesos_read_all()
+begin 
+    select * from accesos order by id_acceso;
+end $$
+delimiter ;
+
+-- read by id --
+delimiter $$
+create procedure sp_accesos_read_by_id(in a_id_acceso int)
+begin 
+    select * from accesos where id_acceso = a_id_acceso;
+end $$
+delimiter ;
+
+-- update --
+delimiter $$
+create procedure sp_accesos_update(
+    in a_id_acceso int, 
+    in a_tipo_persona enum("vista", "residente", "personal"), 
+    in a_id_persona int, 
+    in a_hora_entrada date, 
+    in a_hora_salida date
+)
+begin 
+    update accesos 
+    set tipo_persona = a_tipo_persona,
+        id_persona = a_id_persona,
+        hora_entrada = a_hora_entrada,
+        hora_salida = a_hora_salida
+    where id_acceso = a_id_acceso;
+    select row_count() as filas_afectadas;
+end $$
+delimiter ;
