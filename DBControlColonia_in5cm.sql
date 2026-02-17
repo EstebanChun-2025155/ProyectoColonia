@@ -51,7 +51,7 @@ id_acceso int auto_increment not null,
 tipo_persona enum("visita", "residente", "personal") not null,
 id_seguridad int not null,
 hora_entrada datetime not null,
-hora_salida datetime not null,
+hora_salida datetime null,
 primary key Pk_id_acceso(id_acceso),
 constraint FK_id_seguridad foreign key (id_seguridad)
 references Seguridad(id_seguridad) on delete cascade
@@ -118,7 +118,7 @@ Delimiter $$
 	create procedure sp_Casa_create(c_no_de_casa varchar(5), c_direccion varchar(60), 
     c_estado enum("ocupada", "disponible", "mantenimiento"), c_propietario varchar(100), c_precio_casa decimal(12, 2))
     begin 
-		insert into Proveedores(no_de_casa, direccion, estado, propietario, precio_casa)
+		insert into Casa(no_de_casa, direccion, estado, propietario, precio_casa)
 		values (c_no_de_casa, c_direccion, c_estado, c_propietario, c_precio_casa);
 		select last_insert_id() as id_casa;
     end $$
@@ -128,7 +128,7 @@ Delimiter ;
 Delimiter $$
 	create procedure sp_Casa_delete(in c_id_casa int )
     begin
-		delete from Casa where id_casa = p_id_casa;
+		delete from Casa where id_casa = c_id_casa;
         select row_count() as filas_afectadas;
     end $$
 Delimiter ;
@@ -146,7 +146,7 @@ Delimiter $$
 	create procedure sp_Casa_update(in c_id_casa int, in c_no_de_casa varchar(5), in c_direccion varchar(60), in c_estado enum("ocupada", "disponible", "mantenimiento"), 
     in c_propietario varchar(100), in c_precio_casa decimal(12, 2))
     begin 
-		update Proveedores 
+		update Casa
 		set id_casa = c_id_casa,
 			no_de_casa = c_no_de_casa,
             direccion = c_direccion,
@@ -271,14 +271,14 @@ delimiter ;
 -- create --
 delimiter $$
 create procedure sp_accesos_create(
-    in a_tipo_persona enum("vista", "residente", "personal"), 
-    in a_id_persona int, 
+    in a_tipo_persona enum("visita", "residente", "personal"), 
+    in a_id_seguridad int, 
     in a_hora_entrada datetime, 
     in a_hora_salida datetime
 )
 begin 
-    insert into accesos(tipo_persona, id_persona, hora_entrada, hora_salida)
-    values (a_tipo_persona, a_id_persona, a_hora_entrada, a_hora_salida);
+    insert into accesos(tipo_persona, id_seguridad, hora_entrada, hora_salida)
+    values (a_tipo_persona, a_id_seguridad, a_hora_entrada, a_hora_salida);
     select last_insert_id() as id_acceso;
 end $$
 delimiter ;
@@ -312,15 +312,15 @@ delimiter ;
 delimiter $$
 create procedure sp_accesos_update(
     in a_id_acceso int, 
-    in a_tipo_persona enum("vista", "residente", "personal"), 
-    in a_id_persona int, 
+    in a_tipo_persona enum("visita", "residente", "personal"), 
+    in a_id_seguridad int, 
     in a_hora_entrada datetime, 
     in a_hora_salida datetime
 )
 begin 
     update accesos 
     set tipo_persona = a_tipo_persona,
-        id_persona = a_id_persona,
+        id_seguridad = a_id_seguridad,
         hora_entrada = a_hora_entrada,
         hora_salida = a_hora_salida
     where id_acceso = a_id_acceso;
@@ -333,7 +333,7 @@ Delimiter $$
     create procedure sp_Seguridad_create(
         in s_nombre varchar(100), 
         in s_puesto varchar(50), 
-        in s_jornada enum('día', 'noche'), 
+        in s_jornada enum('dia', 'noche'), 
         in s_salario decimal(10, 2), 
         in s_telefono varchar(8)
     )
@@ -375,7 +375,7 @@ Delimiter $$
         in s_id_seguridad int, 
         in s_nombre varchar(100), 
         in s_puesto varchar(50), 
-        in s_jornada enum('día', 'noche'), 
+        in s_jornada enum('dia', 'noche'), 
         in s_salario decimal(10, 2), 
         in s_telefono varchar(8)
     )
@@ -396,7 +396,7 @@ Delimiter $$
     create procedure sp_Limpieza_create(
         in l_nombre varchar(100), 
         in l_puesto varchar(50), 
-        in l_jornada enum('mañana', 'tarde', 'mixta'), 
+        in l_jornada enum('manana', 'tarde', 'mixta'), 
         in l_salario decimal(10, 2), 
         in l_telefono varchar(8)
     )
@@ -438,7 +438,7 @@ Delimiter $$
         in l_id_limpieza int, 
         in l_nombre varchar(100), 
         in l_puesto varchar(50), 
-        in l_jornada enum('mañana', 'tarde', 'mixta'), 
+        in l_jornada enum('manana', 'tarde', 'mixta'), 
         in l_salario decimal(10, 2), 
         in l_telefono varchar(8)
     )
@@ -529,7 +529,7 @@ create procedure sp_amenidades_create(
     in a_nombre_amenidad varchar(100),
     in a_horario_uso varchar(50),
     in a_costo_uso decimal(10,2),
-    in a_estado varchar(20),
+    in a_estado enum('disponible','ocupado','mantenimiento'),
     in a_capacidad int
 )
 begin
@@ -563,7 +563,7 @@ create procedure sp_amenidades_update(
     in a_nombre_amenidad varchar(100),
     in a_horario_uso varchar(50),
     in a_costo_uso decimal(10,2),
-    in a_estado varchar(20),
+    in a_estado enum('disponible','ocupado','mantenimiento'),
     in a_capacidad int
 )
 begin
